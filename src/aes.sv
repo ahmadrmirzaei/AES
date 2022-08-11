@@ -1,6 +1,5 @@
 `include "src/other/pack.sv"
 `include "src/other/unpack.sv"
-`include "src/other/pipeReg.sv"
 `include "src/other/rotWord.sv"
 `include "src/other/rCon.sv"
 `include "src/other/sBox.sv"
@@ -9,51 +8,48 @@
 `include "src/comb/mixColumns.sv"
 `include "src/comb/shiftRows.sv"
 `include "src/comb/subBytes.sv"
-`include "src/stages/stage0.sv"
-`include "src/stages/stage1.sv"
-`include "src/stages/stage2.sv"
-`include "src/stages/stage3.sv"
-`include "src/stages/stage4.sv"
 `include "src/round.sv"
 `timescale 1ps/1ps
-module aes (
+module aes 
+#(parameter KEY_SIZE = 128)
+(
     input clk, rst, en,
-    input [127:0] state, key,
+    input [127:0] state,
+    input [KEY_SIZE-1:0] initialKey,
     output reg done,
-    output [127:0] state_out, key_out
+    output reg [127:0] state_out
 );
 
-    // reg [127:0] state = 128'hff6ec9c370a6678992b1fb90f3fd6595;
-    // reg [127:0] key = 128'h01010101010101010101010101010101;
-
-    initial begin
-        done <= 1'b0;
-    end
-
-    wire [127:0] state0;
-    wire [127:0] key0;
-    wire done0, done_r;
+    parameter RND_NUM = (KEY_SIZE == 256) ? 14 : (KEY_SIZE == 192) ? 12 : 10;
 
     reg [3:0] num;
     initial num = 4'h0;
 
-    wire [127:0] state_r = (num == 4'h1) ? state0 : state_out;
-    wire [127:0] key_r = (num == 4'h1) ? key0 : key_out;
-    wire en_r = (num == 4'h1) ? done0 : done_r;
-    wire count = en || done_r;
+    wire [127:0] state_ark, state_r;
 
-    stage0 s0 (clk, rst, en, state, key, done0, state0, key0);
-    round r (clk, rst, en_r, state_out, key_out, num, done_r, state_out, key_out);
+    addRoundKey ark (state, initialKey[127:0], state_ark);
+    roundComb #(KEY_SIZE) rComb (state_out, initialKey, num, state_r);
 
-    always @(posedge rst, posedge count) begin
-        if (rst)
-            num <= 4'h0;
-        else if (num == 4'ha && done_r) begin
-            done <= 1'b1;
-            num <= 4'h0;
+    always @(posedge clk, posedge rst) begin
+        if (rst) begin
+            num = 4'h0;
+            done = 1'b0;
         end
-        else
-            num = num + 1;
+        else if (en) begin
+            if (num == 4'h0) begin
+                state_out = state_ark;
+            end
+            else begin
+                state_out = state_r;
+            end
+            if (num == RND_NUM) begin
+                num = 4'h0;
+                done = 1'b1;
+            end
+            else
+                num = num + 4'd1;
+        end
     end
+
     
 endmodule

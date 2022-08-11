@@ -11,14 +11,19 @@ module bits2rows (
 
 endmodule
 
-module bits2cols (
-	input [127:0] in,
-	output [31:0] col0, col1, col2, col3
+module bits2cols
+#(parameter SIZE = 128)
+(
+	input [SIZE-1:0] in,
+	output [31:0] cols [0:COL_NUM-1]
 );
 
-    assign col0 = in[0 +: 32];
-    assign col1 = in[32 +: 32];
-    assign col2 = in[64 +: 32];
-    assign col3 = in[96 +: 32];
+    parameter COL_NUM = SIZE / 32;
 
+    genvar i;
+    generate
+        for (i=0; i<COL_NUM; i=i+1) begin : bits2cols
+            assign cols[i] = in[32*i +: 32];
+        end
+    endgenerate
 endmodule

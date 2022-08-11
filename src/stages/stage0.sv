@@ -7,9 +7,8 @@ module stage0 (
 );
 
     wire [127:0] state_comb;
-    wire [3:0] useless;
 
     addRoundKey ark0 (state, key, state_comb);
-    pipeReg pipe0 (clk, rst, en, state_comb, key, 4'h0, done, state_out, key_out, useless);
+    pipeReg pipe0 (clk, rst, en, state_comb, key, done, state_out, key_out);
 
 endmodule

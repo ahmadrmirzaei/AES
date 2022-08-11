@@ -2,32 +2,25 @@
 module pipeReg (
     input clk, rst, en,
 	input [127:0] state, key,
-    input [3:0] num,
     output reg done,
-	output reg [127:0] state_out, key_out,
-    output reg [3:0] num_out
+	output reg [127:0] state_out, key_out
 );
 
     initial begin
         state_out <= 128'b0;
         key_out <= 128'b0;
-        num_out <= 4'h0;
         done <= 1'b0;
     end
 
-    wire inner_rst = rst || en == 1'b0;
-
     always @(posedge clk) begin
-        if (inner_rst) begin
+        if (rst) begin
             state_out <= 128'b0;
             key_out <= 128'b0;
-            num_out <= 4'h0;
             done <= 1'b0;
         end
         else begin
             state_out <= state;
             key_out <= key;
-            num_out <= num;
             done <= 1'b1;
             
             $display("%0t\n%h %h %h %h\n%h %h %h %h\n%h %h %h %h\n%h %h %h %h\n", $time,

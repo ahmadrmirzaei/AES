@@ -1,6 +1,7 @@
 `timescale 1ps/1ps
 module addRoundKey (
-	input [127:0] state, key,
+	input [127:0] state,
+    input [127:0] key,
 	output [127:0] state_out
 );
 

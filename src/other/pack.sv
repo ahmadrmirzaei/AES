@@ -12,11 +12,20 @@ module rows2bits (
 
 endmodule
 
-module cols2bits (
-	input [31:0] col0, col1, col2, col3,
-    output [127:0] out
+module cols2bits 
+#(parameter SIZE = 128)
+(
+	input [31:0] cols [0:COL_NUM-1],
+    output [SIZE-1:0] out
 );
 
-    assign out = {col3, col2, col1, col0};
+    parameter COL_NUM = SIZE / 32;
+
+    genvar i;
+    generate
+        for(i=0; i<COL_NUM; i=i+1) begin : cols2bits
+            assign out[i*32+:32] = cols[i];
+        end
+    endgenerate
 
 endmodule
