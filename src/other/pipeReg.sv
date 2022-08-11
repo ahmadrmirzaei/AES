@@ -1,32 +1,41 @@
 `timescale 1ps/1ps
 module pipeReg (
     input clk, rst, en,
-	input [127:0] in,
-	output reg [127:0] out,
-    output reg done
+	input [127:0] state, key,
+    input [3:0] num,
+    output reg done,
+	output reg [127:0] state_out, key_out,
+    output reg [3:0] num_out
 );
 
-    initial out <= 1'b0;
-    initial done <= 1'b0;
+    initial begin
+        state_out <= 128'b0;
+        key_out <= 128'b0;
+        num_out <= 4'h0;
+        done <= 1'b0;
+    end
+
+    wire inner_rst = rst || en == 1'b0;
 
     always @(posedge clk) begin
-
-        if (rst) begin
-            out <= 128'b0;
+        if (inner_rst) begin
+            state_out <= 128'b0;
+            key_out <= 128'b0;
+            num_out <= 4'h0;
             done <= 1'b0;
         end
-        else if (en) begin
-            out <= in;
+        else begin
+            state_out <= state;
+            key_out <= key;
+            num_out <= num;
             done <= 1'b1;
+            
             $display("%0t\n%h %h %h %h\n%h %h %h %h\n%h %h %h %h\n%h %h %h %h\n", $time,
-                    in[0+:8], in[32+:8], in[64+:8], in[96+:8],
-                    in[8+:8], in[40+:8], in[72+:8], in[104+:8],
-                    in[16+:8], in[48+:8], in[80+:8], in[112+:8],
-                    in[24+:8], in[56+:8], in[88+:8], in[120+:8]
+                    state[0+:8], state[32+:8], state[64+:8], state[96+:8],
+                    state[8+:8], state[40+:8], state[72+:8], state[104+:8],
+                    state[16+:8], state[48+:8], state[80+:8], state[112+:8],
+                    state[24+:8], state[56+:8], state[88+:8], state[120+:8]
                     );
         end
-
-        else
-            done <= 0;
     end
 endmodule
